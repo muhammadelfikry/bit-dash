@@ -10,8 +10,8 @@ API_KEY = os.getenv("API_KEY")
 
 url = "https://newsapi.org/v2/everything"
 
-start_date = "2025-4-26"
-end_date = "2025-5-26"
+start_date = "2025-4-30"
+end_date = "2025-5-30"
 
 query = ["bitcoin", "ethereum", "dogecoin", "solana", "cardano", "ripple", "polkadot", "cryptocurrency"]
 
@@ -38,19 +38,38 @@ def fetch_news(query, start_date, end_date):
 
 
 if __name__ == "__main__":
-    all_news = []
-    for q in query:
-        news_df = fetch_news(q, start_date, end_date)
-        if news_df is not None:
-            all_news.append(news_df)
+    # all_news = []
+    # for q in query:
+    #     news_df = fetch_news(q, start_date, end_date)
+    #     if news_df is not None:
+    #         all_news.append(news_df)
 
-        else:
-            print(f"No data returned for query '{q}'.")
+    #     else:
+    #         print(f"No data returned for query '{q}'.")
     
+    # if all_news:
+    #     combined_news = pd.concat(all_news, ignore_index=True)
+    #     combined_news.to_csv("../data/raw/news_data.csv", index=False)
+    #     print("News data saved to 'news_data.csv'.")
+    
+    # else:
+    #     print("No news data fetched.")
+
+    all_news = []
+    for date in pd.date_range(start=start_date, end=end_date):
+        date_str = date.strftime("%Y-%m-%d")
+        for q in query:
+            news_df = fetch_news(q, date_str, date_str)
+            if news_df is not None:
+                all_news.append(news_df)
+            
+            else:
+                print(f"No data returned for query '{q}' on {date_str}.")
+
     if all_news:
         combined_news = pd.concat(all_news, ignore_index=True)
         combined_news.to_csv("../data/raw/news_data.csv", index=False)
         print("News data saved to 'news_data.csv'.")
-    
+
     else:
         print("No news data fetched.")
