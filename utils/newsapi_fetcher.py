@@ -4,63 +4,67 @@ import pandas as pd
 import requests
 import os
 
-load_dotenv()
-
-API_KEY = os.getenv("API_KEY")
-
-url = "https://newsapi.org/v2/everything"
-
-start_date = "2025-4-30"
-end_date = "2025-5-30"
-
-query = ["bitcoin", "ethereum", "dogecoin", "solana", "cardano", "ripple", "polkadot", "cryptocurrency"]
-
-def fetch_news(query, start_date, end_date):
+def fetch_news(query, start_date, end_date, api_key):
     params = {
         "q": query,
         "from": start_date,
         "to": end_date,
+        "language": "en",
         "sortBy": "publishedAt",
         "pageSize": 100,
-        "apiKey": API_KEY,
+        "apiKey": api_key,
     }
+
+    url = "https://newsapi.org/v2/everything"
 
     response = requests.get(url, params=params)
 
-    if response.status_code == 200:
+    try:
         news_data = response.json()
         articles = news_data["articles"]
-        df = pd.DataFrame(articles)
+        df = pd.DataFrame(articles, columns=[
+            "publishedAt", "title", 
+            "description", "content"
+        ])
         print(f"Fetched {len(df)} articles for query '{query}' from {start_date} to {end_date}.")
-        return df
-    else:
-        print(f"Failed to fetch news: {response.status_code} - {response.text}")
 
+        return df
+    
+    except Exception as e:
+        if response.status_code == 429 and "ratelimited" in response.text.lower():
+            print("Rate limit exceeded")
+            return False
+        
+        else:
+            print(f"Error fetching news: error: {e}, status code: {response.status_code}, response text: {response.text}")
+            return None
 
 if __name__ == "__main__":
-    # all_news = []
-    # for q in query:
-    #     news_df = fetch_news(q, start_date, end_date)
-    #     if news_df is not None:
-    #         all_news.append(news_df)
+    load_dotenv()
 
-    #     else:
-    #         print(f"No data returned for query '{q}'.")
-    
-    # if all_news:
-    #     combined_news = pd.concat(all_news, ignore_index=True)
-    #     combined_news.to_csv("../data/raw/news_data.csv", index=False)
-    #     print("News data saved to 'news_data.csv'.")
-    
-    # else:
-    #     print("No news data fetched.")
+    API_KEY = os.getenv("API_KEY")
+
+    start_date = "2025-5-11"
+    end_date = "2025-6-11"
+
+    query = ["bitcoin", "ethereum", "dogecoin", "solana", "cardano", 
+             "ripple", "doge", "cryptocurrency", "memecoins",]
+
+    is_rate_limited = False
 
     all_news = []
     for date in pd.date_range(start=start_date, end=end_date):
+        if is_rate_limited:
+            break
+        
         date_str = date.strftime("%Y-%m-%d")
         for q in query:
-            news_df = fetch_news(q, date_str, date_str)
-            if news_df is not None:
+            news_df = fetch_news(q, date_str, date_str, API_KEY)
+            if news_df is False:
+                is_rate_limited = True
+                break
+
+            elif news_df is not None:
                 all_news.append(news_df)
             
             else:
@@ -68,7 +72,7 @@ if __name__ == "__main__":
 
     if all_news:
         combined_news = pd.concat(all_news, ignore_index=True)
-        combined_news.to_csv("../data/raw/news_data.csv", index=False)
+        combined_news.to_csv("./data/raw/news_data.csv", index=False)
         print("News data saved to 'news_data.csv'.")
 
     else:
