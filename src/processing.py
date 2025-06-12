@@ -60,14 +60,15 @@ if __name__ == "__main__":
         df["final_text"] = df["filtered_text"].apply(toSentences)
 
         print("Data cleaning and text processing completed")
-        print("DataFrame shape: ", df.shape)
 
         # Select relevant columns and save to CSV
         cleaned_df = df[["title", "final_text"]].copy()
+        cleaned_df = dataCleaning(cleaned_df)
         cleaned_df.columns = ["title", "description"]
 
         print("Relevant columns selected and renamed")
         print("DataFrame columns: ", cleaned_df.columns)
+        print("DataFrame shape: ", cleaned_df.shape)
 
         cleaned_df.to_csv("./data/processed/cleaned_news_data.csv", index=False)
         print("Successfully saved cleaned data to './data/processed/cleaned_news_data.csv'")
