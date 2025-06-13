@@ -1,0 +1,31 @@
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import tensorflow as tf
+import numpy as np
+import pickle
+
+# load model
+model_path = "./models/embedding/sentiment_model_embedding.h5"
+model = tf.keras.models.load_model(model_path)
+
+# load tokenizer
+tokenizer_path = "./models/embedding/tokenizer_embedding.pickle"
+with open(tokenizer_path, "rb") as handle:
+    tokenizer = pickle.load(handle)
+
+label_map = {0: "netral", 1: "positif", 2: "negatif"}
+
+def predict(text):
+    sequences = tokenizer.texts_to_sequences(text)
+    padded = pad_sequences(sequences, maxlen=100, padding="post")
+    
+    prediction = model.predict(padded)
+    predicted_class = np.argmax(prediction, axis=1)[0]  # Ambil index kelas dengan probabilitas tertinggi
+    confidence = np.max(prediction)
+
+    result = {
+        "text": text,
+        "predicted_class": predicted_class,
+        "label": label_map[predicted_class],
+        "confidence": float(confidence)
+    }
+    return result
