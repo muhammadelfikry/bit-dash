@@ -7,6 +7,7 @@ from sklearn.utils.class_weight import compute_class_weight
 from src.data_loader import load_data
 from src.evaluate import evaluate_model, plot_confusion_matrix
 import tensorflow as tf
+import pickle
 import numpy as np
 import os
 
@@ -66,8 +67,11 @@ history = model.fit(
 )
 
 os.makedirs("models", exist_ok=True)
-model_path = os.path.join("models", "sentiment_model_embedding.h5")
+model_path = os.path.join("models/embedding", "sentiment_model_embedding.h5")
 model.save(model_path)
+
+with open("models/embedding/tokenizer_embedding.pickle", "wb") as handle:
+    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 acc, report, y_pred = evaluate_model(model, X_test, y_test)
 
