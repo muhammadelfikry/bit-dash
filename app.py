@@ -1,5 +1,6 @@
 from inference.sentiment_predictor_embedding import predict
 from utils.newsapi_fetcher import fetch_news
+from utils.llm_text_sumarize import summarize_descriptions
 from dotenv import load_dotenv
 from collections import Counter
 import streamlit as st
@@ -17,7 +18,7 @@ st.title("🧠 Bit-Dash - Crypto News Sentiment")
 # Input dari pengguna (sidebar)
 with st.sidebar:
     st.subheader("🔍 Search News")
-    query = st.text_input("What trends are you looking for", value="bitcoin")
+    query = st.text_input("What trends are you looking for?", value="bitcoin")
     start_date = st.date_input("Start date", value=pd.to_datetime("2025-05-14"))
     end_date = st.date_input("End date", value=pd.to_datetime("2025-05-15"))
 
@@ -72,7 +73,7 @@ if query:
                             y="Value",
                             color="Category",
                             color_discrete_map={
-                                "Positive": "#2ecc71",
+                                "Positive": "#00FF9C",
                                 "Neutral": "#95a5a6",
                                 "Negative": "#FC2947"
                             },
@@ -90,6 +91,13 @@ if query:
                             yaxis=dict(showgrid=False, showticklabels=False)
                         )
                         st.plotly_chart(bar_fig)
+                with st.container():
+                    st.subheader("📝 Summary of News Descriptions")
+                    try:
+                        summary_text = summarize_descriptions(query, desc)
+                        st.text_area("News Summary", summary_text, height=200)
+                    except Exception as e:
+                        st.error(f"❌ Failed to generate summary: {e}")
             else:
                 st.warning("No sentiment prediction results.")
         else:
