@@ -18,7 +18,7 @@ st.title("🧠 Bit-Dash - Crypto News Sentiment")
 # Input dari pengguna (sidebar)
 with st.sidebar:
     st.subheader("🔍 Search News")
-    query = st.text_input("What trends are you looking for", value="bitcoin")
+    query = st.text_input("What trends are you looking for?", value="bitcoin")
     start_date = st.date_input("Start date", value=pd.to_datetime("2025-05-14"))
     end_date = st.date_input("End date", value=pd.to_datetime("2025-05-15"))
 
@@ -73,7 +73,7 @@ if query:
                             y="Value",
                             color="Category",
                             color_discrete_map={
-                                "Positive": "#2ecc71",
+                                "Positive": "#00FF9C",
                                 "Neutral": "#95a5a6",
                                 "Negative": "#FC2947"
                             },
