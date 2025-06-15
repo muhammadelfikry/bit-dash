@@ -1,5 +1,6 @@
 from inference.sentiment_predictor_embedding import predict
 from utils.newsapi_fetcher import fetch_news
+from utils.llm_text_sumarize import summarize_descriptions
 from dotenv import load_dotenv
 from collections import Counter
 import streamlit as st
@@ -90,6 +91,13 @@ if query:
                             yaxis=dict(showgrid=False, showticklabels=False)
                         )
                         st.plotly_chart(bar_fig)
+                with st.container():
+                    st.subheader("📝 Summary of News Descriptions")
+                    try:
+                        summary_text = summarize_descriptions(query, desc)
+                        st.text_area("News Summary", summary_text, height=200)
+                    except Exception as e:
+                        st.error(f"❌ Failed to generate summary: {e}")
             else:
                 st.warning("No sentiment prediction results.")
         else:
