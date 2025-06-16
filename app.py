@@ -15,20 +15,29 @@ load_dotenv()
 st.set_page_config(page_title="Bit-Dash", layout="wide")
 st.title("🧠 Bit-Dash - Crypto News Sentiment")
 
+today = pd.to_datetime("today").normalize()
+
+min_date = today - pd.Timedelta(days=7)
+
 # Input dari pengguna (sidebar)
 with st.sidebar:
     st.subheader("🔍 Search News")
     query = st.text_input("What trends are you looking for?", value="bitcoin")
-    start_date = st.date_input("Start date", value=pd.to_datetime("2025-05-14"))
-    end_date = st.date_input("End date", value=pd.to_datetime("2025-05-15"))
+    start_date = st.date_input("Start date", value=min_date.date())
+    end_date = st.date_input("End date", value=min_date.date())
 
 # Hanya jika ada query dan key
 if query:
     NEWS_API_KEY = os.getenv("API_KEY")
+
     if start_date > end_date:
         st.error("❌ Start date must be before or the same as end date.")
     else:
         news = fetch_news(query, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"), NEWS_API_KEY)
+
+        if news is None or news is False or news.empty:
+            st.error("❌ No news data found. It may be due to API limits or no articles found.")
+            st.stop()
         
         # Ambil deskripsi valid
         desc = [d for d in news["description"].values if d is not None]
